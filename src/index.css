@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-bg: oklch(0.985 0.003 285);
+  --color-surface: oklch(0.97 0.004 285);
+  --color-surface-muted: oklch(0.94 0.006 285);
+  --color-border: oklch(0.89 0.01 286);
+
+  --color-text: oklch(0.26 0.02 280);
+  --color-text-muted: oklch(0.52 0.018 280);
+
+  --color-accent: oklch(0.51 0.285 284);
+  --color-accent-hover: oklch(0.46 0.265 284);
+  --color-accent-soft: oklch(0.95 0.03 284);
+  --color-on-accent: oklch(0.985 0.003 285);
+  --color-ring: oklch(0.62 0.2 284 / 0.35);
+}
+
+.dark {
+  /* --color-bg: oklch(0.985 0.003 285); */
+  --color-bg: oklch(0.16 0.01 280);
+  --color-surface: oklch(0.21 0.012 280);
+  --color-surface-muted: oklch(0.26 0.014 280);
+  --color-border: oklch(0.34 0.015 280);
+
+  --color-text: oklch(0.94 0.006 285);
+  --color-text-muted: oklch(0.74 0.012 285);
+
+  --color-accent: oklch(0.62 0.24 284);
+  --color-accent-hover: oklch(0.68 0.22 284);
+  --color-accent-soft: oklch(0.3 0.06 284);
+  --color-on-accent: oklch(0.18 0.01 280);
+  --color-ring: oklch(0.7 0.19 284 / 0.4);
+}

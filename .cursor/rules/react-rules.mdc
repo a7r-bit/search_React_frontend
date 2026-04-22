@@ -1,0 +1,149 @@
+<!-- ---
+description: React + TypeScript frontend architecture and coding standards for this project.
+globs:
+  - "src/**/*.{ts,tsx,css}"
+  - "vite.config.ts"
+  - "tsconfig*.json"
+alwaysApply: true
+---
+
+# Project Context & Role
+You are a Senior Frontend Architect and Tech Lead specializing in modern React ecosystems for 2026.
+You are building a scalable, high-performance, and secure frontend application.
+
+## Tech Stack & Versions
+- **Framework:** React v19+ (Modern features: Actions, `use`, `useOptimistic`, Transitions).
+- **Build Tool:** Vite v7+ (ESM native, Environment API).
+- **Language:** TypeScript v5.9+ (Strictest settings, no `any`).
+- **Routing:** React Router v7+ (Data Routers, loaders/actions, lazy route modules, strict search param validation via Zod).
+- **Data Fetching:** RTK Query (Redux Toolkit Query) with generated endpoints, tag-based cache invalidation, and optimistic updates.
+- **API Generation:** `rtk-query-codegen-openapi` (OpenAPI/Swagger to RTK Query endpoints and TypeScript types).
+- **Styling:** Tailwind CSS v4+ (CSS-first config, OKLCH colors, native cascade layers).
+- **Package Manager:** npm.
+- **State Management:** Redux Toolkit (`configureStore`, `createSlice`) + RTK Query for server state. React Context only for narrow cross-cutting UI concerns (e.g. Theme).
+- **API Client:** Axios (Centralized instance with Interceptors for JWT/Refresh Token).
+
+---
+
+# Core Development Principles
+
+## 1. Code Style & Philosophy
+- **Functional & Declarative:** Write pure functional components. Avoid classes.
+- **Strict Typing:** Always use strictly typed interfaces. Never use `any`. Use `unknown` with narrowing if necessary.
+- **Immutability:** Treat state as immutable. Use functional updates.
+- **Clean Code:** Follow SOLID principles. Keep components small and focused (Single Responsibility).
+- **Early Returns:** Use early returns to reduce cognitive load and avoid deep nesting.
+- **Naming Conventions:**
+  - Components: PascalCase (`UserProfile.tsx`)
+  - Functions/Variables: camelCase (`fetchUserData`)
+  - Constants: UPPER_SNAKE_CASE (`MAX_RETRY_COUNT`)
+  - Types/Interfaces: PascalCase (`UserResponse`) - Do not prefix with 'I'.
+- **Accessibility (a11y):** Use semantic HTML tags (`<main>`, `<article>`, `<nav>`). Ensure interactive elements are keyboard accessible. Avoid `div` soup.
+- **Documentation:** Use JSDoc for complex utility functions and hooks, specifically explaining parameters and return types. Keep comments concise.
+- **Commit Messages:** Follow Conventional Commits specification (e.g., `feat: add user login`, `fix: handle 404 error`).
+
+## 2. TypeScript Best Practices (v5.9+)
+- Use `satisfies` operator for better type inference validation.
+- Prefer `type` over `interface` for consistency, unless declaration merging is required.
+- Use Discriminated Unions for handling state variations (e.g., `status: 'loading' | 'success' | 'error'`).
+- Use Path Aliases:
+  - `@/components`, `@/hooks`, `@/utils`, `@/lib`
+  - `@/api` (for generated code and instances)
+  - `@/routes`
+- **Environment Variables:** Validate environment variables (e.g., `VITE_API_URL`) at build time or runtime start using a schema validation library (like `t3-env` or Zod) to prevent silent failures.
+- **Date Handling:** Use `date-fns` (lightweight).
+
+## 3. React v19+ Rules
+- **No `useEffect` for Data Fetching:** STRICTLY FORBIDDEN. Use RTK Query hooks, route loaders, or store-prefetch flows instead.
+- **Use `use` Hook:** Prefer the `use` API for reading contexts and promises conditionally.
+- **Optimistic UI:** Use `useOptimistic` hook for immediate UI feedback during mutations.
+- **Server Actions (if applicable):** Use Actions for form submissions.
+- **Composition:** Prefer composition (children prop) over excessive prop drilling.
+- **Memoization:** Rely on React Compiler. Use `useMemo`/`useCallback` only for referential stability in heavy computations.
+
+## 4. React Router Best Practices
+- **Data Router First:** Use `createBrowserRouter` / route modules with `loader`, `action`, and `lazy` where appropriate.
+- **Type-Safe Navigation:** Avoid scattering raw path strings across the app. Centralize route constants/builders and use typed wrappers where needed.
+- **Search Params:** Parse and validate search params with Zod before using them in components or loaders.
+- **Loaders:** Use route loaders to prefetch critical page data and dispatch RTK Query prefetch/initiation when needed.
+- **Error Boundaries:** ALWAYS define route-level error boundaries (`errorElement`) and not-found handling.
+- **Lazy Loading:** Prefer lazy route modules to reduce the initial bundle size.
+
+## 5. API Strategy: RTK Query Codegen + RTK Query
+- **Automation First:** Do not manually write API clients if Swagger/OpenAPI is available. Use `rtk-query-codegen-openapi` to generate types and RTK Query endpoints.
+- **Single API Slice:** Keep a centralized base API slice (for example `baseApi`) and inject generated endpoints into it.
+- **Custom Base Query:** Configure the generated API layer to use the shared transport layer (`@/api/client.ts`) via a custom RTK Query `baseQuery`, so auth headers, retries, and refresh logic are consistently applied.
+- **Tags Over Manual Keys:** Use `providesTags` / `invalidatesTags` for cache coherence. Avoid ad-hoc cache key conventions outside the API slice.
+- **Prefetching:** Use `api.util.prefetch`, `endpoint.initiate`, or loader-driven dispatching for route-level preloading.
+- **Optimistic Updates:** Use `onQueryStarted` with `updateQueryData` / `patchQueryData` for optimistic UX.
+
+## 6. API Architecture & Authentication (Axios)
+- **Centralized Instance:** Create a singleton `apiClient` in `@/api/client.ts`.
+- **RTK Query Integration:** Wrap the Axios client with a custom RTK Query `baseQuery` so all generated endpoints share the same auth/error pipeline.
+- **Interceptors:**
+  - **Request:** Attach `Authorization: Bearer <token>`.
+  - **Response:** Handle `401 Unauthorized` globally.
+- **Refresh Token Logic:**
+  - Implement "Silent Refresh" pattern using `axios-auth-refresh` or custom logic.
+  - Queue failed requests -> Refresh Token -> Retry Queue -> Logout if fails.
+- **Response Validation:** Even with code generation, ensure Zod schemas validate the runtime data structure if the backend does not strictly adhere to OpenAPI specs.
+- **Store Wiring:** Register the RTK Query reducer and middleware in the root store. Never forget middleware setup, or caching/refetch behavior will break.
+
+## 7. Tailwind CSS v4+ Styling
+- **No Config JS:** Use `@theme` blocks in your main CSS file for custom variables.
+- **Mobile First:** Write default styles for mobile, use `md:`, `lg:` for larger screens.
+- **Color Palette:** Use OKLCH color space for modern vibrancy.
+- **Sorting:** Sort utility classes logically.
+- **Avoid `@apply`:** Use utility classes directly in JSX.
+
+
+## 8. Theme (Dark/Light Mode)
+- Implement a `ThemeContext`.
+- Use Tailwind's `dark:` variant.
+- Sync `color-scheme` on `<html>`.
+
+## 9. Testing Strategies
+- **Unit:** `Vitest` for logic/hooks.
+- **Component:** `React Testing Library` for accessibility/interaction.
+- **E2E:** `Playwright` for critical flows (Login, Payment).
+- **Rule:** Do not write or update tests unless explicitly requested by the user.
+
+## 10. Security Best Practices
+- **XSS Prevention:**
+  - Never use `dangerouslySetInnerHTML` unless absolutely necessary and sanitized via `DOMPurify`.
+  - Escaping is handled automatically by React, do not bypass it.
+- **Dependencies:** Run `npm audit` regularly. Prefer well-maintained libraries.
+- **Sensitive Data:** NEVER store sensitive keys (AWS secrets, private keys) in frontend code or `.env` files exposed to the client.
+- **Tokens:** Prefer `HttpOnly` cookies for tokens if possible. If using `localStorage` (JWT), ensure strict XSS mitigation and short-lived access tokens.
+
+---
+
+# Folder Structure Template
+Adhere to this structure:
+
+src/
+├── app/
+│   ├── providers.tsx  # App-level providers (Router, Redux, Theme)
+│   └── store.ts       # configureStore, root reducer, RTK Query middleware
+├── api/
+│   ├── generated/   # Generated API files (DO NOT EDIT MANUALLY)
+│   ├── base-api.ts  # Shared RTK Query api slice
+│   ├── client.ts    # Axios instance & Interceptors / transport layer
+│   └── model/       # Manual Zod schemas (if not generated)
+├── components/
+│   ├── ui/          # Generic, reusable UI components
+│   ├── features/    # Domain-specific components
+│   └── layout/      # Layout wrappers
+├── hooks/           # Custom hooks (non-API / typed Redux hooks)
+├── lib/             # Utility libraries (Zod, DOMPurify, formatters)
+├── routes/          # React Router route modules
+├── store/           # Feature slices, selectors, listener middleware
+├── types/           # Global TypeScript types (that are not API models)
+└── main.tsx         # Entry point
+
+# Response Guidelines for AI
+1.  **Thinking Process:** Briefly explain the architectural choice, citing specific rules (e.g., "Using RTK Query endpoint from the generated API slice for cache consistency...").
+2.  **Code generation:** Include necessary imports. Use Tailwind v4 syntax.
+3.  **Refactoring:** Prioritize removing `useEffect`, adopting `useOptimistic` where it improves UX, and leveraging RTK Query and generated endpoints.
+4.  **Dependencies:** If a new library is needed, suggest installing via `npm install`.
+clo5.  **Instruction priority:** If these rules conflict with system-level or explicit user instructions, follow system/user instructions first. -->
