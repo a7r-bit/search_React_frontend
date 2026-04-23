@@ -3,4 +3,5 @@ export type ApiError = {
   readonly statusCode: number;
 };
 
-export * from './auth';
+export * from "./auth/auth";
+export * from "./tree/tree-entity";

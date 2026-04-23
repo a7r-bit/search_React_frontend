@@ -4,7 +4,7 @@ import {
   selectAuthTokens,
   selectCurrentUser,
 } from "@/store/auth/auth-selectors";
-import { authApi } from "@/api/auth-api";
+import { authApi } from "@/api/modelApi/auth-api";
 import { logoutUser } from "@/store/auth/auth-slice";
 
 export function AuthProvider({ children }: PropsWithChildren) {

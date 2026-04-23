@@ -15,13 +15,6 @@ export function Header() {
         All files
       </h1>
       <div className="flex flex-row gap-2 items-center mx-2">
-        <Button>
-          <PlusIcon />
-          New file
-        </Button>
-        <Button size="md" variant="ghost" onClick={toggleTheme}>
-          <WrapIcon icon={theme === "light" ? "Moon" : "Sun"} size={18} />
-        </Button>
         <div className="flex min-w-[20rem] items-center gap-3 rounded-md border border-(--color-border) bg-(--color-surface) px-2 py-1">
           <Search
             size={16}
@@ -41,6 +34,9 @@ export function Header() {
             Ctrl+K
           </Button>
         </div>
+        <Button size="md" variant="ghost" onClick={toggleTheme}>
+          <WrapIcon icon={theme === "light" ? "Moon" : "Sun"} size={18} />
+        </Button>
         {user && <UserAvatar user={user} />}
       </div>
     </header>

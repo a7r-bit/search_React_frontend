@@ -4,8 +4,8 @@ import { appRoutePaths } from "./paths";
 import { LoginLayout } from "@/components/layout/LoginLayout";
 import { LoginForm } from "@/components/features/LoginForm";
 import { AppShell } from "@/components/layout/AppShell";
-import { HomeHero } from "@/components/features/HomeHero";
 import { SideBar } from "@/components/features/Sidebar";
+import { DocumentPage } from "@/components/layout/DocumentPage";
 export function AppRouter() {
   return (
     <Routes>
@@ -25,7 +25,7 @@ export function AppRouter() {
             </AppShell>
           }
         >
-          <Route index element={<HomeHero />} />
+          <Route index element={<DocumentPage />} />
           <Route path={appRoutePaths.dashboard.slice(1)} element={<></>} />
           <Route path={appRoutePaths.projects.slice(1)} element={<></>} />
           <Route path={appRoutePaths.analytics.slice(1)} element={<></>} />

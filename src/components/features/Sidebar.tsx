@@ -14,7 +14,7 @@ import {
   type SideBarItemProps,
 } from "@/components/ui/SideBarItem";
 import { appRoutePaths } from "@/routes/paths";
-import { useSignOutMutation } from "@/api/auth-api";
+import { useSignOutMutation } from "@/api/modelApi/auth-api";
 import { useNavigate } from "react-router";
 type SideBarProps = {
   readonly collapsed?: boolean;

@@ -15,7 +15,7 @@ import type { RootState } from "@/app/root-reducer";
 import { getEnv } from "@/lib/env";
 import { authTokenChange, logoutUser } from "@/store/auth/auth-slice";
 
-export const apiTagTypes = ["Auth"] as const;
+export const apiTagTypes = ["Auth", "Tree"] as const;
 
 export type ApiTagType = (typeof apiTagTypes)[number];
 

@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, type ComponentProps } from "react";
 import { useNavigate } from "react-router";
 
-import { useSignInMutation } from "@/api/auth-api";
+import { useSignInMutation } from "@/api/modelApi/auth-api";
 import { appRoutePaths } from "@/routes/paths";
 
 import { Button } from "../ui/Button";
