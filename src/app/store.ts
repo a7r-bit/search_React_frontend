@@ -11,17 +11,14 @@ export function createAppStore() {
       getDefaultMiddleware().concat(baseApi.middleware),
   });
 
-  let currentTokens = store.getState().auth.tokens;
-
   store.subscribe(() => {
     const nextTokens = store.getState().auth.tokens;
 
-    if (currentTokens === nextTokens) {
-      return;
+    if (nextTokens) {
+      authStorage.save(nextTokens);
+    } else {
+      authStorage.clear();
     }
-
-    currentTokens = nextTokens;
-    authStorage.save(nextTokens);
   });
 
   return store;

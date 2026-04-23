@@ -1,4 +1,4 @@
-import { BellIcon, PlusIcon, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "../ui/Button";
 import { WrapIcon } from "../ui/WrapIcon";
