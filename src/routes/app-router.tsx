@@ -5,7 +5,7 @@ import { LoginLayout } from "@/components/layout/LoginLayout";
 import { LoginForm } from "@/components/features/LoginForm";
 import { AppShell } from "@/components/layout/AppShell";
 import { SideBar } from "@/components/features/Sidebar";
-import { DocumentPage } from "@/components/layout/DocumentPage";
+import { DocumentPage } from "@/components/layout/document-page/DocumentPage";
 export function AppRouter() {
   return (
     <Routes>

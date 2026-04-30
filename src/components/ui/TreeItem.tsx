@@ -119,9 +119,7 @@ export function TreeItem({
         />
       )}
 
-      <span className="flex-1 truncate text-sm">
-        {node.name}
-      </span>
+      <span className="flex-1 truncate text-sm">{node.name}</span>
 
       {isLocked ? (
         <Lock size={14} className="text-orange-400" aria-hidden="true" />
@@ -136,7 +134,9 @@ export function TreeItem({
         }}
         aria-label="Node actions"
       >
-        <MoreVertical size={14} aria-hidden="true" />
+        {node.permissions.length > 0 ? (
+          <MoreVertical size={14} aria-hidden="true" />
+        ) : null}
       </button>
     </div>
   );

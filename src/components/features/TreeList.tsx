@@ -1,8 +1,7 @@
-import type { MouseEvent, ReactElement } from 'react';
+import type { MouseEvent, ReactElement } from "react";
 
-import type { TreeNodeEntity } from '@/api/model/tree/tree-entity';
-
-import { TreeItem } from './TreeItem';
+import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
+import { TreeItem } from "../ui/TreeItem";
 
 export type TreeListProps = {
   readonly entities: Record<string, TreeNodeEntity>;
@@ -59,5 +58,9 @@ export function TreeList({
     );
   };
 
-  return <div className={className}>{rootIds.map((rootId) => renderNode(rootId, 0))}</div>;
+  return (
+    <div className={className}>
+      {rootIds.map((rootId) => renderNode(rootId, 0))}
+    </div>
+  );
 }
