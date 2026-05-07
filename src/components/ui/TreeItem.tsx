@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 
 import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
-import { useLazyGetFileQuery } from "@/api/modelApi/s3-api";
 
 export type TreeItemProps = {
   readonly node: TreeNodeEntity;
@@ -32,45 +31,12 @@ export function TreeItem({
   onSelect,
   onContextMenu,
 }: TreeItemProps) {
-  const [getFile] = useLazyGetFileQuery();
   const isLocked = !node.permissions.includes("READ");
 
-  const handleClick = async () => {
+  const handleClick = () => {
     if (isLocked) return;
 
     onSelect(node);
-
-    if (node.kind !== "file" || !node.document?.fileUrl) return;
-
-    const fileRef = node.document.fileUrl.trim();
-    if (!fileRef) return;
-
-    // Some backends return a direct URL in tree payload.
-    if (fileRef.startsWith("http://") || fileRef.startsWith("https://")) {
-      window.open(fileRef, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    // Open a blank tab synchronously to avoid popup blockers.
-    const popup = window.open("about:blank", "_blank");
-
-    try {
-      const file = await getFile({ key: fileRef }).unwrap();
-      if (file.url) {
-        if (popup) {
-          popup.location.href = file.url;
-        } else {
-          window.open(file.url, "_blank", "noopener,noreferrer");
-        }
-      } else if (popup) {
-        popup.close();
-      }
-    } catch (e) {
-      if (popup) {
-        popup.close();
-      }
-      console.error("Failed to open file", e);
-    }
   };
 
   return (
@@ -80,9 +46,10 @@ export function TreeItem({
           ? "bg-(--color-accent-soft) text-(--color-text)"
           : "text-(--color-text) hover:bg-(--color-surface-muted)"
       } ${isLocked ? "opacity-70" : ""}`}
+      title={node.name}
       style={{ paddingLeft: `${level * 16 + 8}px` }}
       onClick={() => {
-        void handleClick();
+        handleClick();
       }}
       onContextMenu={(event) => {
         event.preventDefault();

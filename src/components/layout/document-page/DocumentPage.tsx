@@ -1,82 +1,55 @@
-import {
-  useGetTreeQuery,
-  useLazyGetTreeChildrenQuery,
-} from "@/api/modelApi/tree-api";
-import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { selectVisibleNodes } from "@/store/tree/tree-selectors";
-import { setSelected, toogleExpanded } from "@/store/tree/tree-slice";
-import { TreeList } from "../../features/TreeList";
-import { ContextMenu } from "../../ui/ContextMenu";
+import { useEffect, useState } from "react";
+import { DocumentHistoryPanel } from "./DocumentHistoryPanel";
+import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
+import { DocumentTreePanel } from "./DocumentTreePanel";
+import { useDocumentPreview } from "./hooks/useDocumentPreview";
+import { useDocumentTree } from "./hooks/useDocumentTree";
 
-import DOCUMENT_PAGE_MENU_ITEMS from "./menu-config";
-import { useNodeContextMenu } from "./use-node-context-menu";
+import { useDocumentVersions } from "./hooks/useDocumentVersions";
 
 export function DocumentPage() {
-  useGetTreeQuery(undefined, { refetchOnMountOrArgChange: true });
-  const [loadChildren] = useLazyGetTreeChildrenQuery();
+  // Hooks
+  const documentTree = useDocumentTree();
+  const documentVersions = useDocumentVersions(documentTree.selectedNode);
 
-  const dispatch = useAppDispatch();
-  const tree = useAppSelector((state) => state.tree);
-  const visibleNodes = useAppSelector(selectVisibleNodes);
-  const { menu, handleContextMenu, closeMenu, handleMenuAction } =
-    useNodeContextMenu();
+  const defaultVersionId =
+    documentTree.selectedNode?.document?.latestVersionId ?? null;
+  const [openedVersionId, setOpenedVersionId] = useState<string | null>(null);
 
-  const handleSelect = (node: TreeNodeEntity) => {
-    dispatch(setSelected(node.id));
-  };
+  const [historyOpen, setHistoryOpen] = useState(false);
 
-  const handleToggle = (nodeId: string) => {
-    const node = tree.entities[nodeId];
-    const isExpanded = tree.expandedIds.includes(nodeId);
-    const hasLoadedChildren =
-      (tree.childrenByParentId[nodeId] ?? []).length > 0;
+  useEffect(() => {
+    setOpenedVersionId(null);
+    setHistoryOpen(false);
+  }, [documentTree.selectedNode?.id]);
 
-    if (!isExpanded && node?.hasChildren && !hasLoadedChildren) {
-      loadChildren({ parentId: nodeId, sort: "name:asc" });
-    }
+  const activeVersionId = openedVersionId ?? defaultVersionId;
+  const selectedDocumentVersion =
+    documentVersions.documentVersions.find(
+      (version) => version.id === activeVersionId
+    ) ?? null;
+  const documentPreview = useDocumentPreview(
+    documentTree.selectedNode,
+    selectedDocumentVersion?.fileUrl ?? null
+  );
 
-    dispatch(toogleExpanded(nodeId));
-  };
+  const canOpenHistory = documentTree.selectedNode?.kind === "file";
 
   return (
-    <div className="flex flex-row bg-amber-100 h-full">
-      <section className=" w-1/4 rounded-xl bg-(--color-surface) p-3">
-        <h2 className="mb-2 text-sm font-medium text-(--color-text)">
-          Document tree
-        </h2>
-        <TreeList
-          entities={tree.entities}
-          rootIds={tree.rootIds}
-          childrenByParentId={tree.childrenByParentId}
-          expandedIds={tree.expandedIds}
-          selectedId={tree.selectedId}
-          onToggle={handleToggle}
-          onSelect={handleSelect}
-          onContextMenu={handleContextMenu}
-        />
-        {menu ? (
-          <ContextMenu
-            x={menu.x}
-            y={menu.y}
-            items={DOCUMENT_PAGE_MENU_ITEMS}
-            nodePermissions={menu.node?.permissions ?? []}
-            onAction={handleMenuAction}
-            onClose={closeMenu}
-          />
-        ) : null}
-        {visibleNodes.length === 0 ? (
-          <p className="mt-3 text-xs text-(--color-text-muted)">
-            Tree is empty.
-          </p>
-        ) : null}
-      </section>
-      {/* File Preview */}
-      <section>
-        <h2 className="mb-2 text-sm font-medium text-(--color-text)">
-          File Preview
-        </h2>
-      </section>
+    <div className="relative flex h-full min-h-0 flex-row gap-2">
+      <DocumentTreePanel {...documentTree} />
+      <DocumentPreviewPanel
+        {...documentPreview}
+        onOpenHistory={canOpenHistory ? () => setHistoryOpen(true) : undefined}
+      />
+      <DocumentHistoryPanel
+        {...documentVersions}
+        selectedDocumentVersion={selectedDocumentVersion}
+        isLoadingDocumentVersions={documentVersions.isLoadingDocumentVersions}
+        onSelectVersion={setOpenedVersionId}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
     </div>
   );
 }

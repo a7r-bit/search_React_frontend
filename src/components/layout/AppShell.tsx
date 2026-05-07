@@ -45,9 +45,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
           {sidebarNode}
         </section>
       </aside>
-      <main className="min-w-0 flex-1 overflow-y-auto p-2 ">
+      <main className="flex min-w-0 flex-1 min-h-0 flex-col p-2">
         <Header />
-        {children}
+        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
       </main>
     </div>
   );

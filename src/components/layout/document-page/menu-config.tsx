@@ -1,8 +1,6 @@
 import type { ContextMenuItem } from "@/components/ui/ContextMenu";
 import {
-  Delete,
   FolderArchive,
-  LucideAccessibility,
   Move,
   Pencil,
   Shield,
