@@ -19,23 +19,21 @@ export function DocumentHistoryPanel({
   open,
   onClose,
 }: DocumentHistoryPanelProps) {
+  if (!open) {
+    return null;
+  }
+
   return (
     <>
       <button
         type="button"
-        aria-hidden={!open}
-        className={
-          open
-            ? "fixed inset-0 z-40 bg-black/40 transition-opacity"
-            : "pointer-events-none fixed inset-0 z-40 bg-black/0 opacity-0"
-        }
+        className="fixed inset-0 z-40 bg-black/40 transition-opacity"
         onClick={onClose}
       />
       <aside
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-(--color-border) bg-(--color-surface) shadow-lg transition-transform duration-200 ease-out ${
-          open ? "translate-x-0" : "pointer-events-none translate-x-full"
-        }`}
-        aria-hidden={!open}
+        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm translate-x-0 flex-col border-l border-(--color-border) bg-(--color-surface) shadow-lg transition-transform duration-200 ease-out"
+        role="dialog"
+        aria-modal="true"
       >
         <header className="flex shrink-0 items-center justify-between gap-2 border-b border-(--color-border) p-3">
           <h2 className="text-sm font-medium text-(--color-text)">

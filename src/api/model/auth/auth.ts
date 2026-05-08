@@ -39,3 +39,12 @@ export function toAuthTokens(tokens: AuthTokensApi): AuthTokens {
     refreshToken: tokens.refresh_token,
   };
 }
+
+export type SwitchRoleRequest = {
+  readonly requireRole: string;
+};
+
+export type SwitchRoleResponse = {
+  readonly tokens: AuthTokensApi;
+  readonly user?: AuthUser | null;
+};

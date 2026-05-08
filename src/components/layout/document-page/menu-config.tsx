@@ -13,7 +13,6 @@ const DOCUMENT_PAGE_MENU_ITEMS: ContextMenuItem[] = [
     id: "create-directory",
     label: "Create Directory",
     icon: <FolderArchive size={18} />,
-    danger: true,
     permission: "WRITE",
   },
   {

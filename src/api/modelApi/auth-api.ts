@@ -5,6 +5,8 @@ import {
   type RefreshTokenResponse,
   type SignInRequest,
   type SignInResponse,
+  type SwitchRoleRequest,
+  type SwitchRoleResponse,
 } from "@/api/model";
 import {
   authTokenChange,
@@ -36,6 +38,26 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
     }),
+
+    switchRole: build.mutation<SwitchRoleResponse, SwitchRoleRequest>({
+      query: (requireRole) => ({
+        url: "/auth/switch-role",
+        method: "POST",
+        body: requireRole,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            setAuthSession({
+              tokens: toAuthTokens(data.tokens),
+              user: data.user ?? null,
+            })
+          );
+        } catch (error) {}
+      },
+    }),
+
     refreshToken: build.mutation<RefreshTokenResponse, RefreshTokenResponse>({
       query: (refreshToken) => ({
         url: "/token/refresh-token",
@@ -78,4 +100,5 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useSignInMutation, useSignOutMutation } = authApi;
+export const { useSignInMutation, useSignOutMutation, useSwitchRoleMutation } =
+  authApi;

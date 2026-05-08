@@ -1,11 +1,11 @@
 import { useState, type ChangeEvent, type ComponentProps } from "react";
 import { useNavigate } from "react-router";
+import { Field, Input, Label } from "@headlessui/react";
 
 import { useSignInMutation } from "@/api/modelApi/auth-api";
 import { appRoutePaths } from "@/routes/paths";
 
 import { Button } from "../ui/Button";
-import { Label } from "../ui/Label";
 
 type LoginFormState = {
   readonly username: string;
@@ -56,8 +56,14 @@ export function LoginForm() {
         Please enter your username and password to sign in.
       </p>
 
-      <Label htmlFor="username" label="Username" required>
-        <input
+      <Field className="w-full">
+        <Label
+          htmlFor="username"
+          className="mb-1 block text-sm text-(--color-text)"
+        >
+          Username <span className="text-red-500">*</span>
+        </Label>
+        <Input
           type="text"
           id="username"
           name="username"
@@ -68,10 +74,16 @@ export function LoginForm() {
           placeholder="Enter your username"
           className="w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-text) outline-none transition-colors focus:border-(--color-accent) focus:ring-2 focus:ring-(--color-ring)"
         />
-      </Label>
+      </Field>
 
-      <Label htmlFor="password" label="Password" required>
-        <input
+      <Field className="w-full">
+        <Label
+          htmlFor="password"
+          className="mb-1 block text-sm text-(--color-text)"
+        >
+          Password <span className="text-red-500">*</span>
+        </Label>
+        <Input
           type="password"
           id="password"
           name="password"
@@ -82,13 +94,11 @@ export function LoginForm() {
           placeholder="Enter your password"
           className="w-full rounded-lg border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-text) outline-none transition-colors focus:border-(--color-accent) focus:ring-2 focus:ring-(--color-ring)"
         />
-      </Label>
+      </Field>
 
-      {error ? (
-        <p className="text-sm text-red-500" role="alert">
-          {error?.message}
-        </p>
-      ) : null}
+      <p className={`min-h-5 text-sm ${error ? "text-red-500" : "invisible"}`}>
+        {error ? error?.message : " "}
+      </p>
 
       <Button
         variant="primary"
