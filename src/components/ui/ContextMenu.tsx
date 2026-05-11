@@ -1,3 +1,4 @@
+import type { TreeNodeEntity, TreeNodeKind } from "@/api/model";
 import type { ReactNode } from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -12,6 +13,7 @@ export type ContextMenuAction =
 export type ContextMenuItem = {
   id: ContextMenuAction;
   label: string;
+  kind?: TreeNodeKind;
   permission: string;
   icon?: ReactNode;
   danger?: boolean;
@@ -20,6 +22,7 @@ export type ContextMenuItem = {
 interface ContextMenuProps {
   x: number;
   y: number;
+  node: TreeNodeEntity;
   nodePermissions: string[];
   items: ContextMenuItem[];
   onAction: (action: ContextMenuAction) => void;
@@ -62,14 +65,17 @@ export function ContextMenu({
   y,
   nodePermissions,
   items,
+  node,
   onAction,
   onClose,
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState({ top: y, left: x });
-  const visibleItems = items.filter((item) =>
-    nodePermissions.includes(item.permission)
-  );
+  const visibleItems = items.filter((item) => {
+    const hasPermission = nodePermissions.includes(item.permission);
+    const kindAllowes = item.kind ? item.kind === node.kind : true;
+    return hasPermission && kindAllowes;
+  });
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {

@@ -12,7 +12,12 @@ export function UserMenu({ user, handleOnChangeRole }: UserMenuProps) {
   return (
     <Menu as="div" className="relative inline-block">
       <MenuButton>
-        <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" />
+        <ChevronDown
+          size={16}
+          strokeWidth={1.75}
+          aria-hidden="true"
+          className="hover:text-(--color-text-muted)"
+        />
       </MenuButton>
       <MenuItems
         transition

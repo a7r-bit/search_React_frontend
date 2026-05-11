@@ -4,8 +4,18 @@ import {
   setDocumentVersionsLoading,
 } from "@/store/documentVersion/documentVersion-slice";
 import { baseApi } from "../base-api";
-import { mapApiDocumentVersionsToEntities } from "../model/documentVersion/mapper";
+import {
+  mapApiDicumentVersionToEntity,
+  mapApiDocumentVersionsToEntities,
+} from "../model/documentVersion/mapper";
 import type { ApiDocumentVersionResponse } from "../model/documentVersion/api-document-version-dto";
+import type { DocumentVersionEntity } from "../model/documentVersion/document-version-entity";
+
+type UpdateDocumentVersionParams = {
+  id: string;
+  version: number;
+  fileName: string;
+};
 
 export const documentVersionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -37,10 +47,32 @@ export const documentVersionApi = baseApi.injectEndpoints({
         }
       },
     }),
+    updateDocumentVersion: build.mutation<
+      DocumentVersionEntity,
+      UpdateDocumentVersionParams
+    >({
+      query: ({ id, version, fileName }) => ({
+        url: `/document-versions/${id}`,
+        method: "PATCH",
+        body: { version, fileName },
+      }),
+      transformResponse: (responce: ApiDocumentVersionResponse) =>
+        mapApiDicumentVersionToEntity(responce),
+      invalidatesTags: ["Tree"],
+    }),
+    deleteDocumentVersion: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `/document-versions/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Tree"],
+    }),
   }),
 });
 
 export const {
   useGetDocumentsVersionsQuery,
   useLazyGetDocumentsVersionsQuery,
+  useDeleteDocumentVersionMutation,
+  useUpdateDocumentVersionMutation,
 } = documentVersionApi;

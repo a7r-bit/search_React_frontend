@@ -1,7 +1,13 @@
+export type TreeNodeKind = "directory" | "file";
+export type TreeNodeConversionStatus =
+  | "PENDING"
+  | "IN_PROGRESS"
+  | "DONE"
+  | "FAILED";
 export type TreeNodeEntity = {
   id: string;
   parentId: string | null;
-  kind: "directory" | "file";
+  kind: TreeNodeKind;
   name: string;
   hasChildren: boolean;
   permissions: string[];
@@ -12,7 +18,7 @@ export type TreeDocumentEntity = {
   latestVersionId: string;
   version: number;
   fileName: string;
-  fileUrl:string;
-  conversionStatus: "PENDING" | "IN_PROGRESS" | "DONE" | "FAILED";
+  fileUrl: string;
+  conversionStatus: TreeNodeConversionStatus;
   updatedAt: Date;
 };

@@ -1,11 +1,20 @@
 import { setChildren, setTree } from "@/store/tree/tree-slice";
 import { baseApi } from "../base-api";
 import type { TreeNodeEntity } from "../model/tree/tree-entity";
+import type { ApiNodeUpdateDto } from "../model/node/api-node-dto";
+import type { NodeEntity } from "../model/node/node-entity";
+import { mapApiNodeDtoToEntity } from "../model/node/mapper";
 
 type GetTreeChildrenParams = {
   parentId: string;
   type?: string;
   sort?: string;
+};
+
+type UpdateNodeParams = {
+  id: string;
+  name: string;
+  description: string;
 };
 
 export const treeApi = baseApi.injectEndpoints({
@@ -43,6 +52,24 @@ export const treeApi = baseApi.injectEndpoints({
       },
       providesTags: ["Tree"],
     }),
+
+    updateNode: build.mutation<NodeEntity, UpdateNodeParams>({
+      query: ({ id, name, description }) => ({
+        url: `/node/${id}`,
+        method: "PATCH",
+        body: { name, description },
+      }),
+      transformResponse: (response: ApiNodeUpdateDto) =>
+        mapApiNodeDtoToEntity(response),
+      invalidatesTags: ["Tree"],
+    }),
+    deleteNode: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `/node/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Tree"],
+    }),
   }),
 });
 
@@ -50,4 +77,6 @@ export const {
   useGetTreeQuery,
   useGetTreeChildrenQuery,
   useLazyGetTreeChildrenQuery,
+  useUpdateNodeMutation,
+  useDeleteNodeMutation,
 } = treeApi;

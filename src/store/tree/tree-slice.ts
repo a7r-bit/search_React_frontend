@@ -23,26 +23,43 @@ const treeSlice = createSlice({
   initialState: initialState,
   reducers: {
     setTree(state, action: PayloadAction<TreeNodeEntity[]>) {
-      const entities = action.payload.reduce(
+      const payload = action.payload;
+      if (payload.length === 0) {
+        return;
+      }
+
+      const incomingEntities = payload.reduce(
         (acc, node) => {
           acc[node.id] = node;
           return acc;
         },
         {} as Record<string, TreeNodeEntity>
       );
-      state.entities = entities;
-      state.rootIds = action.payload
+      state.entities = { ...state.entities, ...incomingEntities };
+
+      const rootsFromPayload = payload
         .filter((node) => node.parentId === null)
         .map((node) => node.id);
-      state.childrenByParentId = action.payload.reduce(
+      if (rootsFromPayload.length > 0) {
+        state.rootIds = rootsFromPayload;
+      }
+
+      const childrenFromPayload = payload.reduce(
         (acc, node) => {
-          if (node.parentId) {
-            acc[node.parentId] = [...(acc[node.parentId] || []), node.id];
+          if (node.parentId !== null) {
+            const parentId = node.parentId;
+            if (!acc[parentId]) {
+              acc[parentId] = [];
+            }
+            acc[parentId].push(node.id);
           }
           return acc;
         },
         {} as Record<string, string[]>
       );
+      for (const parentId of Object.keys(childrenFromPayload)) {
+        state.childrenByParentId[parentId] = childrenFromPayload[parentId]!;
+      }
     },
     toogleExpanded(state, action: PayloadAction<string>) {
       const newExpandedIds = state.expandedIds.includes(action.payload)
