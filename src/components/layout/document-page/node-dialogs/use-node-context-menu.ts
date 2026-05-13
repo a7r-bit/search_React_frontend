@@ -32,6 +32,10 @@ export type CreateTreeDirectoryParams = {
   description?: string;
 };
 
+export type CopyForTestingParams = {
+  copyNode: TreeNodeEntity;
+};
+
 function errorMessageFromUnknown(error: unknown): string {
   if (
     error &&
@@ -182,6 +186,10 @@ export function useNodeContextMenu() {
         break;
       case "manage-access":
         console.log("Manage access:", menu.node.id);
+        break;
+      case "copy-for-testing":
+        setDialog({ type: "copy-for-testing", copyNode: menu.node });
+        closeMenu();
         break;
       case "move":
         console.log("Move:", menu.node.id);

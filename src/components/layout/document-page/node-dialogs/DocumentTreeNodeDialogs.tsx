@@ -1,6 +1,7 @@
 import { ModalShell } from "@/components/ui/ModalShell";
 
 import {
+  isCopyForTestingDialog,
   isCreateDirectoryDialog,
   isDeleteDialog,
   isRenameDialog,
@@ -14,6 +15,7 @@ import type {
 } from "./use-node-context-menu";
 import { DeleteNodeForm } from "./delete/DeleteNodeForm";
 import { CreateNodeDirectoryForm } from "./create-directory/CreateNodeDirectoryForm";
+import { CopyForTestingForm } from "./copy-for-testing/CopyForTestingForm";
 
 type DocumentTreeNodeDialogsProps = {
   readonly dialog: NodeDialogState;
@@ -80,6 +82,16 @@ export function DocumentTreeNodeDialogs({
           onSubmit={submitCreateDirectory}
           isSubmitting={isCreatingDirectory}
           error={createDirectoryError}
+        />
+      </ModalShell>
+    );
+  }
+  if (isCopyForTestingDialog(dialog)) {
+    return (
+      <ModalShell open onClose={closeNodeDialog} title="Copy for Testing">
+        <CopyForTestingForm
+          copyNode={dialog.copyNode}
+          onClose={closeNodeDialog}
         />
       </ModalShell>
     );
