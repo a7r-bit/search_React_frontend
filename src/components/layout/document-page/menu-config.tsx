@@ -4,6 +4,7 @@ import {
   Move,
   Pencil,
   Shield,
+  Telescope,
   Trash,
   Upload,
 } from "lucide-react";
@@ -39,6 +40,13 @@ const DOCUMENT_PAGE_MENU_ITEMS: ContextMenuItem[] = [
     label: "Manage Access",
     icon: <Shield size={18} />,
     permission: "ADMIN",
+  },
+  {
+    id: "copy-for-testing",
+    label: "Copy for Testing",
+    icon: <Telescope size={18} />,
+    permission: "READ",
+    kind: "file",
   },
   {
     id: "delete",

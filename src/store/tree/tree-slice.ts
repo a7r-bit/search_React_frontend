@@ -96,12 +96,50 @@ const treeSlice = createSlice({
       };
       state.childrenByParentId = newChildrenByParentId;
     },
+    removeNode(state, action: PayloadAction<string>) {
+      const idsToRemove = new Set<string>();
+      const stack = [action.payload];
+
+      while (stack.length > 0) {
+        const id = stack.pop();
+        if (!id || idsToRemove.has(id)) continue;
+
+        idsToRemove.add(id);
+        for (const childId of state.childrenByParentId[id] ?? []) {
+          stack.push(childId);
+        }
+      }
+
+      const target = state.entities[action.payload];
+      if (target?.parentId === null) {
+        state.rootIds = state.rootIds.filter((id) => !idsToRemove.has(id));
+      } else if (target?.parentId) {
+        const siblings = state.childrenByParentId[target.parentId] ?? [];
+        const nextSiblings = siblings.filter((id) => !idsToRemove.has(id));
+        state.childrenByParentId[target.parentId] = nextSiblings;
+
+        const parent = state.entities[target.parentId];
+        if (parent && nextSiblings.length === 0) {
+          parent.hasChildren = false;
+        }
+      }
+
+      for (const id of idsToRemove) {
+        delete state.entities[id];
+        delete state.childrenByParentId[id];
+      }
+
+      state.expandedIds = state.expandedIds.filter((id) => !idsToRemove.has(id));
+      if (state.selectedId && idsToRemove.has(state.selectedId)) {
+        state.selectedId = null;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(logoutUser, () => initialState);
   },
 });
 
-export const { setSelected, setTree, toogleExpanded, setChildren } =
+export const { setSelected, setTree, toogleExpanded, setChildren, removeNode } =
   treeSlice.actions;
 export const treeReducer = treeSlice.reducer;

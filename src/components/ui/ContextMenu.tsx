@@ -8,6 +8,7 @@ export type ContextMenuAction =
   | "move"
   | "rename"
   | "manage-access"
+  | "copy-for-testing"
   | "delete";
 
 export type ContextMenuItem = {

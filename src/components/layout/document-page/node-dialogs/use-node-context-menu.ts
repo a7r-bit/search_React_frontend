@@ -1,14 +1,15 @@
 import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
 import { useUpdateDocumentVersionMutation } from "@/api/modelApi/document-version-api";
-import { useUpdateNodeMutation } from "@/api/modelApi/tree-api";
+import {
+  useCreateNodeMutation,
+  useDeleteNodeMutation,
+  useUpdateNodeMutation,
+} from "@/api/modelApi/tree-api";
 import type { ContextMenuAction } from "@/components/ui/ContextMenu";
 import type { MouseEvent } from "react";
 import { useCallback, useState } from "react";
 
-import {
-  INITIAL_NODE_DIALOG,
-  type NodeDialogState,
-} from "./node-dialog-state";
+import { INITIAL_NODE_DIALOG, type NodeDialogState } from "./node-dialog-state";
 
 type NodeContextMenuState = {
   x: number;
@@ -19,6 +20,16 @@ type NodeContextMenuState = {
 export type RenameTreeItemParams = {
   renameTarget: TreeNodeEntity;
   newName: string;
+};
+
+export type DeleteTreeItemParams = {
+  deleteTarget: TreeNodeEntity;
+};
+
+export type CreateTreeDirectoryParams = {
+  parentNode: TreeNodeEntity;
+  newName: string;
+  description?: string;
 };
 
 function errorMessageFromUnknown(error: unknown): string {
@@ -37,10 +48,16 @@ export function useNodeContextMenu() {
   const [menu, setMenu] = useState<NodeContextMenuState>(null);
   const [dialog, setDialog] = useState<NodeDialogState>(INITIAL_NODE_DIALOG);
   const [renameError, setRenameError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [createDirectoryError, setCreateDirectoryError] = useState<
+    string | null
+  >(null);
 
   const [updateNode, updateNodeState] = useUpdateNodeMutation();
   const [updateDocumentVersion, updateDocumentVersionState] =
     useUpdateDocumentVersionMutation();
+  const [deleteNode, deleteNodeState] = useDeleteNodeMutation();
+  const [createNode, createNodeState] = useCreateNodeMutation();
 
   const handleContextMenu = (node: TreeNodeEntity, event: MouseEvent) => {
     event.preventDefault();
@@ -54,7 +71,50 @@ export function useNodeContextMenu() {
   const closeNodeDialog = useCallback(() => {
     setDialog(INITIAL_NODE_DIALOG);
     setRenameError(null);
+    setDeleteError(null);
+    setCreateDirectoryError(null);
   }, []);
+
+  const submitDelete = useCallback(
+    async ({ deleteTarget }: DeleteTreeItemParams) => {
+      setDeleteError(null);
+      if (!deleteTarget) {
+        setDeleteError("No item to delete");
+        return;
+      }
+      try {
+        await deleteNode({ id: deleteTarget.id }).unwrap();
+        closeNodeDialog();
+      } catch (error) {
+        setDeleteError(errorMessageFromUnknown(error));
+      }
+    },
+    [closeNodeDialog, deleteNode]
+  );
+  const submitCreateDirectory = useCallback(
+    async ({ parentNode, newName, description }: CreateTreeDirectoryParams) => {
+      setCreateDirectoryError(null);
+      if (!parentNode) {
+        setCreateDirectoryError("No parent node to create directory");
+        return;
+      }
+      if (!newName) {
+        setCreateDirectoryError("Name cannot be empty");
+        return;
+      }
+      try {
+        await createNode({
+          parentId: parentNode.id,
+          name: newName,
+          description,
+        }).unwrap();
+        closeNodeDialog();
+      } catch (error) {
+        setCreateDirectoryError(errorMessageFromUnknown(error));
+      }
+    },
+    [closeNodeDialog, createNode]
+  );
 
   const submitRename = useCallback(
     async ({ renameTarget: target, newName }: RenameTreeItemParams) => {
@@ -109,14 +169,16 @@ export function useNodeContextMenu() {
 
     switch (action) {
       case "rename":
-        setDialog({ type: "rename", target: menu.node });
+        setDialog({ type: "rename", renameNode: menu.node });
         closeMenu();
         break;
       case "delete":
-        console.log("Delete node:", menu.node.id);
+        setDialog({ type: "delete", deleteNode: menu.node });
+        closeMenu();
         break;
       case "create-directory":
-        console.log("Create directory:", menu.node.id);
+        setDialog({ type: "create-directory", parentNode: menu.node });
+        closeMenu();
         break;
       case "manage-access":
         console.log("Manage access:", menu.node.id);
@@ -145,5 +207,11 @@ export function useNodeContextMenu() {
     submitRename,
     isRenaming,
     renameError,
+    submitDelete,
+    deleteError,
+    isDeleting: deleteNodeState.isLoading,
+    submitCreateDirectory,
+    createDirectoryError,
+    isCreatingDirectory: createNodeState.isLoading,
   };
 }

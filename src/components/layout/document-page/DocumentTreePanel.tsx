@@ -1,12 +1,13 @@
 import { TreeList } from "@/components/features/TreeList";
 import { ContextMenu } from "@/components/ui/ContextMenu";
-import { ModalShell } from "@/components/ui/ModalShell";
 
 import DOCUMENT_PAGE_MENU_ITEMS from "./menu-config";
+import { DocumentTreeNodeDialogs } from "./node-dialogs/DocumentTreeNodeDialogs";
 import { useDocumentTree } from "./hooks/useDocumentTree";
-import { isRenameDialog } from "./node-dialog-state";
-import { RenameNodeForm } from "./RenameNodeForm";
-import { useNodeContextMenu } from "./use-node-context-menu";
+import {
+  useNodeContextMenu,
+  type CreateTreeDirectoryParams,
+} from "./node-dialogs/use-node-context-menu";
 
 type DocumentTreePanelProps = ReturnType<typeof useDocumentTree>;
 
@@ -26,6 +27,12 @@ export function DocumentTreePanel({
     submitRename,
     isRenaming,
     renameError,
+    deleteError,
+    isDeleting,
+    submitDelete,
+    createDirectoryError,
+    isCreatingDirectory,
+    submitCreateDirectory,
   } = useNodeContextMenu();
 
   return (
@@ -54,21 +61,20 @@ export function DocumentTreePanel({
           onClose={closeMenu}
         />
       ) : null}
-      {isRenameDialog(dialog) ? (
-        <ModalShell
-          open
-          onClose={closeNodeDialog}
-          title="Rename"
-        >
-          <RenameNodeForm
-            renameTarget={dialog.target}
-            onClose={closeNodeDialog}
-            onSubmit={submitRename}
-            isSubmitting={isRenaming}
-            error={renameError}
-          />
-        </ModalShell>
-      ) : null}
+      <DocumentTreeNodeDialogs
+        dialog={dialog}
+        closeNodeDialog={closeNodeDialog}
+        submitRename={submitRename}
+        isRenaming={isRenaming}
+        renameError={renameError}
+        submitDelete={submitDelete}
+        isDeleting={isDeleting}
+        deleteError={deleteError}
+        submitCreateDirectory={submitCreateDirectory}
+        isCreatingDirectory={isCreatingDirectory}
+        createDirectoryError={createDirectoryError}
+      />
+
       {visibleNodes.length === 0 ? (
         <p className="mt-3 text-xs text-(--color-text-muted)">Tree is empty.</p>
       ) : null}

@@ -1,4 +1,4 @@
-import { setChildren, setTree } from "@/store/tree/tree-slice";
+import { removeNode, setChildren, setTree } from "@/store/tree/tree-slice";
 import { baseApi } from "../base-api";
 import type { TreeNodeEntity } from "../model/tree/tree-entity";
 import type { ApiNodeUpdateDto } from "../model/node/api-node-dto";
@@ -15,6 +15,12 @@ type UpdateNodeParams = {
   id: string;
   name: string;
   description: string;
+};
+
+type CreateNodeParams = {
+  parentId: string;
+  name: string;
+  description?: string;
 };
 
 export const treeApi = baseApi.injectEndpoints({
@@ -52,6 +58,33 @@ export const treeApi = baseApi.injectEndpoints({
       },
       providesTags: ["Tree"],
     }),
+    createNode: build.mutation<void, CreateNodeParams>({
+      query: ({ parentId, name, description }) => ({
+        url: "/node",
+        method: "POST",
+        body: { type: "DIRECTORY", parentId, name, description },
+      }),
+      invalidatesTags: ["Tree"],
+      async onQueryStarted({ parentId }, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          if (parentId) {
+            dispatch(
+              treeApi.endpoints.getTreeChildren.initiate(
+                { parentId, sort: "name:asc" },
+                { forceRefetch: true }
+              )
+            );
+          } else {
+            dispatch(
+              treeApi.endpoints.getTree.initiate(undefined, {
+                forceRefetch: true,
+              })
+            );
+          }
+        } catch {}
+      },
+    }),
 
     updateNode: build.mutation<NodeEntity, UpdateNodeParams>({
       query: ({ id, name, description }) => ({
@@ -68,6 +101,12 @@ export const treeApi = baseApi.injectEndpoints({
         url: `/node/${id}`,
         method: "DELETE",
       }),
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(removeNode(id));
+        } catch (error) {}
+      },
       invalidatesTags: ["Tree"],
     }),
   }),
@@ -77,6 +116,7 @@ export const {
   useGetTreeQuery,
   useGetTreeChildrenQuery,
   useLazyGetTreeChildrenQuery,
+  useCreateNodeMutation,
   useUpdateNodeMutation,
   useDeleteNodeMutation,
 } = treeApi;

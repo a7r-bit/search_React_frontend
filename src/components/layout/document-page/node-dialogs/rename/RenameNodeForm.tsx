@@ -1,10 +1,15 @@
 import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
 import { Field, Input, Label } from "@headlessui/react";
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type SubmitEventHandler,
+} from "react";
 
 import { Button } from "@/components/ui/Button";
 
-import type { RenameTreeItemParams } from "./use-node-context-menu";
+import type { RenameTreeItemParams } from "../use-node-context-menu";
 
 type RenameNodeFormProps = {
   readonly renameTarget: TreeNodeEntity;
@@ -27,7 +32,7 @@ export function RenameNodeForm({
     setValue(renameTarget.name);
   }, [renameTarget]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     void onSubmit({ renameTarget, newName: value });
   };
@@ -69,7 +74,12 @@ export function RenameNodeForm({
         >
           Cancel
         </Button>
-        <Button type="submit" variant="primary" size="md" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="md"
+          disabled={isSubmitting}
+        >
           Save
         </Button>
       </div>
