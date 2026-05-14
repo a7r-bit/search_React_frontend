@@ -1,11 +1,17 @@
 import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
-import { useUpdateDocumentVersionMutation } from "@/api/modelApi/document-version-api";
 import {
+  useUpdateDocumentVersionMutation,
+  useUploadFileMutation,
+} from "@/api/modelApi/document-version-api";
+import {
+  treeApi,
   useCreateNodeMutation,
   useDeleteNodeMutation,
+  useMoveNodeMutation,
   useUpdateNodeMutation,
 } from "@/api/modelApi/tree-api";
 import type { ContextMenuAction } from "@/components/ui/ContextMenu";
+import { useAppDispatch } from "@/hooks/redux";
 import type { MouseEvent } from "react";
 import { useCallback, useState } from "react";
 
@@ -36,6 +42,16 @@ export type CopyForTestingParams = {
   copyNode: TreeNodeEntity;
 };
 
+export type UploadFileParams = {
+  parentNode: TreeNodeEntity;
+  file: File;
+};
+
+export type MoveNodeParams = {
+  movedNode: TreeNodeEntity;
+  newParentNode: TreeNodeEntity;
+};
+
 function errorMessageFromUnknown(error: unknown): string {
   if (
     error &&
@@ -49,6 +65,7 @@ function errorMessageFromUnknown(error: unknown): string {
 }
 
 export function useNodeContextMenu() {
+  const dispatch = useAppDispatch();
   const [menu, setMenu] = useState<NodeContextMenuState>(null);
   const [dialog, setDialog] = useState<NodeDialogState>(INITIAL_NODE_DIALOG);
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -56,12 +73,16 @@ export function useNodeContextMenu() {
   const [createDirectoryError, setCreateDirectoryError] = useState<
     string | null
   >(null);
+  const [uploadFileError, setUploadFileError] = useState<string | null>(null);
+  const [moveNodeError, setMoveNodeError] = useState<string | null>(null);
 
   const [updateNode, updateNodeState] = useUpdateNodeMutation();
   const [updateDocumentVersion, updateDocumentVersionState] =
     useUpdateDocumentVersionMutation();
   const [deleteNode, deleteNodeState] = useDeleteNodeMutation();
   const [createNode, createNodeState] = useCreateNodeMutation();
+  const [uploadFile, uploadFileState] = useUploadFileMutation();
+  const [moveNode, moveNodeState] = useMoveNodeMutation();
 
   const handleContextMenu = (node: TreeNodeEntity, event: MouseEvent) => {
     event.preventDefault();
@@ -77,7 +98,30 @@ export function useNodeContextMenu() {
     setRenameError(null);
     setDeleteError(null);
     setCreateDirectoryError(null);
+    setUploadFileError(null);
+    setMoveNodeError(null);
   }, []);
+
+  const refreshTreeByParentId = useCallback(
+    (parentId: string | null) => {
+      if (parentId) {
+        void dispatch(
+          treeApi.endpoints.getTreeChildren.initiate(
+            { parentId, sort: "name:asc" },
+            { forceRefetch: true }
+          )
+        );
+        return;
+      }
+
+      void dispatch(
+        treeApi.endpoints.getTree.initiate(undefined, {
+          forceRefetch: true,
+        })
+      );
+    },
+    [dispatch]
+  );
 
   const submitDelete = useCallback(
     async ({ deleteTarget }: DeleteTreeItemParams) => {
@@ -95,6 +139,41 @@ export function useNodeContextMenu() {
     },
     [closeNodeDialog, deleteNode]
   );
+
+  const submitUploadFile = useCallback(
+    async ({ parentNode, file }: UploadFileParams) => {
+      setUploadFileError(null);
+      if (!parentNode) {
+        setUploadFileError("No parent node to upload file");
+        return;
+      }
+      if (!file) {
+        setUploadFileError("No file to upload");
+        return;
+      }
+      try {
+        if (parentNode.kind === "directory") {
+          const newDocumentNode = await createNode({
+            type: "DOCUMENT",
+            name: file.name,
+            parentId: parentNode.id,
+          }).unwrap();
+          await uploadFile({ nodeId: newDocumentNode.id, file }).unwrap();
+          refreshTreeByParentId(newDocumentNode.id);
+          closeNodeDialog();
+        }
+        if (parentNode.kind === "file") {
+          await uploadFile({ nodeId: parentNode.id, file }).unwrap();
+          refreshTreeByParentId(parentNode.id);
+          closeNodeDialog();
+        }
+      } catch (error) {
+        setUploadFileError(errorMessageFromUnknown(error));
+      }
+    },
+    [closeNodeDialog, createNode, refreshTreeByParentId, uploadFile]
+  );
+
   const submitCreateDirectory = useCallback(
     async ({ parentNode, newName, description }: CreateTreeDirectoryParams) => {
       setCreateDirectoryError(null);
@@ -111,13 +190,15 @@ export function useNodeContextMenu() {
           parentId: parentNode.id,
           name: newName,
           description,
+          type: "DIRECTORY",
         }).unwrap();
+        refreshTreeByParentId(parentNode.id);
         closeNodeDialog();
       } catch (error) {
         setCreateDirectoryError(errorMessageFromUnknown(error));
       }
     },
-    [closeNodeDialog, createNode]
+    [closeNodeDialog, createNode, refreshTreeByParentId]
   );
 
   const submitRename = useCallback(
@@ -168,6 +249,32 @@ export function useNodeContextMenu() {
     [closeNodeDialog, updateDocumentVersion, updateNode]
   );
 
+  const submitMove = useCallback(
+    async ({ movedNode, newParentNode }: MoveNodeParams) => {
+      setMoveNodeError(null);
+      if (!movedNode) {
+        setMoveNodeError("No node to move");
+        return;
+      }
+      if (!newParentNode) {
+        setMoveNodeError("No parent node to move to");
+        return;
+      }
+      try {
+        await moveNode({
+          moveNodeId: movedNode.id,
+          newParentId: newParentNode.id,
+        }).unwrap();
+        refreshTreeByParentId(movedNode.parentId);
+        refreshTreeByParentId(newParentNode.id);
+        closeNodeDialog();
+      } catch (error) {
+        setMoveNodeError(errorMessageFromUnknown(error));
+      }
+    },
+    [closeNodeDialog, moveNode, refreshTreeByParentId]
+  );
+
   const handleMenuAction = (action: ContextMenuAction) => {
     if (!menu?.node) return;
 
@@ -192,10 +299,12 @@ export function useNodeContextMenu() {
         closeMenu();
         break;
       case "move":
-        console.log("Move:", menu.node.id);
+        setDialog({ type: "move", moveNode: menu.node });
+        closeMenu();
         break;
       case "upload-file":
-        console.log("Upload file:", menu.node.id);
+        setDialog({ type: "upload-file", parentNode: menu.node });
+        closeMenu();
         break;
       default:
         console.log("Context action:", action, "for node:", menu.node.id);
@@ -221,5 +330,11 @@ export function useNodeContextMenu() {
     submitCreateDirectory,
     createDirectoryError,
     isCreatingDirectory: createNodeState.isLoading,
+    submitUploadFile,
+    uploadFileError,
+    isUploadingFile: uploadFileState.isLoading,
+    submitMove,
+    moveNodeError,
+    isMoving: moveNodeState.isLoading,
   };
 }

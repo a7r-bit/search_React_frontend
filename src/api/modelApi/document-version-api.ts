@@ -17,6 +17,11 @@ type UpdateDocumentVersionParams = {
   fileName: string;
 };
 
+type UploadFileParams = {
+  nodeId: string;
+  file: File;
+};
+
 export const documentVersionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getDocumentsVersions: build.query<ApiDocumentVersionResponse[], string>({
@@ -67,6 +72,22 @@ export const documentVersionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Tree"],
     }),
+
+    uploadFile: build.mutation<DocumentVersionEntity, UploadFileParams>({
+      query: ({ nodeId, file }) => {
+        const formData = new FormData();
+        formData.append("nodeId", nodeId);
+        formData.append("file", file);
+        return {
+          url: `/document-versions`,
+          method: `POST`,
+          body: formData,
+        };
+      },
+      transformResponse: (response: ApiDocumentVersionResponse) =>
+        mapApiDicumentVersionToEntity(response),
+      invalidatesTags: ["Tree"],
+    }),
   }),
 });
 
@@ -75,4 +96,5 @@ export const {
   useLazyGetDocumentsVersionsQuery,
   useDeleteDocumentVersionMutation,
   useUpdateDocumentVersionMutation,
+  useUploadFileMutation,
 } = documentVersionApi;

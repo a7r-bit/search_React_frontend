@@ -21,8 +21,14 @@ export type ApiTagType = (typeof apiTagTypes)[number];
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: getEnv().apiUrl,
-  prepareHeaders: (headers, { getState }) => {
-    headers.set("Content-Type", "application/json");
+  prepareHeaders: (headers, { getState, arg }) => {
+    const requestBody =
+      typeof arg === "object" && arg && "body" in arg ? arg.body : undefined;
+    const isFormData = requestBody instanceof FormData;
+
+    if (!isFormData) {
+      headers.set("Content-Type", "application/json");
+    }
 
     const accessToken = (getState() as RootState).auth.tokens?.accessToken;
 

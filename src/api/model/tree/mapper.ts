@@ -1,5 +1,8 @@
-import type { ApiTreeNodeResponse } from "./api-tree-dto";
-import type { TreeNodeEntity } from "./tree-entity";
+import type {
+  ApiCreateNodeResponse,
+  ApiTreeNodeResponse,
+} from "./api-tree-dto";
+import type { CreateNodeEntity, TreeNodeEntity } from "./tree-entity";
 
 export const mapApiTreeNodeResponseToTreeNodeEntity = (
   dto: ApiTreeNodeResponse
@@ -25,3 +28,15 @@ export const mapApiTreeNodeResponseToTreeNodeEntity = (
 export const mapApiTreeNodesToEntities = (
   items: ApiTreeNodeResponse[]
 ): TreeNodeEntity[] => items.map(mapApiTreeNodeResponseToTreeNodeEntity);
+
+export const mapApiCreateNodeResponseToCreateNodeEntity = (
+  dto: ApiCreateNodeResponse
+): CreateNodeEntity => ({
+  id: dto.id,
+  type: dto.type,
+  parentId: dto.parentId,
+  name: dto.name,
+  description: dto.description,
+  createdAt: dto.createdAt,
+  updatedAt: dto.updatedAt,
+});

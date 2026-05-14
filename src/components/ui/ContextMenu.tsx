@@ -125,16 +125,18 @@ export function ContextMenu({
         className="fixed z-20 min-w-40 rounded-md bg-(--color-surface) p-1 shadow-md"
         style={{ top: position.top, left: position.left }}
       >
-        {visibleItems.map((item) =>
-          menuRow(
-            item.id,
-            item.label,
-            item.icon,
-            item.danger,
-            onAction,
-            onClose
-          )
-        )}
+        {visibleItems.map((item) => (
+          <div key={item.id}>
+            {menuRow(
+              item.id,
+              item.label,
+              item.icon,
+              item.danger,
+              onAction,
+              onClose
+            )}
+          </div>
+        ))}
       </div>
     </>
   );

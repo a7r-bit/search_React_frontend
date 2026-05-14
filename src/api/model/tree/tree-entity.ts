@@ -22,3 +22,13 @@ export type TreeDocumentEntity = {
   conversionStatus: TreeNodeConversionStatus;
   updatedAt: Date;
 };
+
+export type CreateNodeEntity = {
+  id: string;
+  type: "DIRECTORY" | "DOCUMENT";
+  parentId: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+};

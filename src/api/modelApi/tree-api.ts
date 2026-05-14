@@ -1,9 +1,14 @@
 import { removeNode, setChildren, setTree } from "@/store/tree/tree-slice";
 import { baseApi } from "../base-api";
-import type { TreeNodeEntity } from "../model/tree/tree-entity";
+import type {
+  CreateNodeEntity,
+  TreeNodeEntity,
+} from "../model/tree/tree-entity";
 import type { ApiNodeUpdateDto } from "../model/node/api-node-dto";
 import type { NodeEntity } from "../model/node/node-entity";
 import { mapApiNodeDtoToEntity } from "../model/node/mapper";
+import type { ApiCreateNodeResponse } from "../model/tree/api-tree-dto";
+import { mapApiCreateNodeResponseToCreateNodeEntity } from "../model/tree/mapper";
 
 type GetTreeChildrenParams = {
   parentId: string;
@@ -21,6 +26,12 @@ type CreateNodeParams = {
   parentId: string;
   name: string;
   description?: string;
+  type: "DIRECTORY" | "DOCUMENT";
+};
+
+type MoveNodeParams = {
+  moveNodeId: string;
+  newParentId: string;
 };
 
 export const treeApi = baseApi.injectEndpoints({
@@ -33,7 +44,6 @@ export const treeApi = baseApi.injectEndpoints({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          console.log("Получение корневых узлов", data);
           dispatch(setTree(data));
         } catch (error) {}
       },
@@ -49,41 +59,20 @@ export const treeApi = baseApi.injectEndpoints({
       async onQueryStarted(_args, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          console.log(
-            `Получение дочерних узлов для узла ${_args.parentId}`,
-            data
-          );
           dispatch(setChildren(data));
         } catch (error) {}
       },
       providesTags: ["Tree"],
     }),
-    createNode: build.mutation<void, CreateNodeParams>({
-      query: ({ parentId, name, description }) => ({
+    createNode: build.mutation<CreateNodeEntity, CreateNodeParams>({
+      query: ({ parentId, name, description, type }) => ({
         url: "/node",
         method: "POST",
-        body: { type: "DIRECTORY", parentId, name, description },
+        body: { type: type, parentId, name, description },
       }),
+      transformResponse: (response: ApiCreateNodeResponse) =>
+        mapApiCreateNodeResponseToCreateNodeEntity(response),
       invalidatesTags: ["Tree"],
-      async onQueryStarted({ parentId }, { dispatch, queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          if (parentId) {
-            dispatch(
-              treeApi.endpoints.getTreeChildren.initiate(
-                { parentId, sort: "name:asc" },
-                { forceRefetch: true }
-              )
-            );
-          } else {
-            dispatch(
-              treeApi.endpoints.getTree.initiate(undefined, {
-                forceRefetch: true,
-              })
-            );
-          }
-        } catch {}
-      },
     }),
 
     updateNode: build.mutation<NodeEntity, UpdateNodeParams>({
@@ -96,6 +85,18 @@ export const treeApi = baseApi.injectEndpoints({
         mapApiNodeDtoToEntity(response),
       invalidatesTags: ["Tree"],
     }),
+
+    moveNode: build.mutation<NodeEntity, MoveNodeParams>({
+      query: ({ newParentId, moveNodeId }) => ({
+        url: `/node/${moveNodeId}/move`,
+        method: "PUT",
+        body: { newParentId: newParentId },
+      }),
+      transformResponse: (response: ApiNodeUpdateDto) =>
+        mapApiNodeDtoToEntity(response),
+      invalidatesTags: ["Tree"],
+    }),
+
     deleteNode: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
         url: `/node/${id}`,
@@ -119,4 +120,5 @@ export const {
   useCreateNodeMutation,
   useUpdateNodeMutation,
   useDeleteNodeMutation,
+  useMoveNodeMutation,
 } = treeApi;

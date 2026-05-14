@@ -4,18 +4,24 @@ import {
   isCopyForTestingDialog,
   isCreateDirectoryDialog,
   isDeleteDialog,
+  isMoveDialog,
   isRenameDialog,
+  isUploadFileDialog,
   type NodeDialogState,
 } from "./node-dialog-state";
 import { RenameNodeForm } from "./rename/RenameNodeForm";
 import type {
   CreateTreeDirectoryParams,
   DeleteTreeItemParams,
+  MoveNodeParams,
   RenameTreeItemParams,
+  UploadFileParams,
 } from "./use-node-context-menu";
 import { DeleteNodeForm } from "./delete/DeleteNodeForm";
 import { CreateNodeDirectoryForm } from "./create-directory/CreateNodeDirectoryForm";
 import { CopyForTestingForm } from "./copy-for-testing/CopyForTestingForm";
+import { UploadFileForm } from "./upload-file/UploadFileForm";
+import { MoveNodeForm } from "./move/MoveNodeForm";
 
 type DocumentTreeNodeDialogsProps = {
   readonly dialog: NodeDialogState;
@@ -31,6 +37,12 @@ type DocumentTreeNodeDialogsProps = {
   ) => void | Promise<void>;
   readonly isCreatingDirectory: boolean;
   readonly createDirectoryError: string | null;
+  readonly submitUploadFile: (params: UploadFileParams) => void | Promise<void>;
+  readonly uploadFileError: string | null;
+  readonly isUploadingFile: boolean;
+  readonly submitMove: (params: MoveNodeParams) => void | Promise<void>;
+  readonly moveNodeError: string | null;
+  readonly isMoving: boolean;
 };
 
 export function DocumentTreeNodeDialogs({
@@ -45,6 +57,12 @@ export function DocumentTreeNodeDialogs({
   createDirectoryError,
   isCreatingDirectory,
   submitCreateDirectory,
+  isUploadingFile,
+  submitUploadFile,
+  uploadFileError,
+  submitMove,
+  moveNodeError,
+  isMoving,
 }: DocumentTreeNodeDialogsProps) {
   if (isRenameDialog(dialog)) {
     return (
@@ -92,6 +110,32 @@ export function DocumentTreeNodeDialogs({
         <CopyForTestingForm
           copyNode={dialog.copyNode}
           onClose={closeNodeDialog}
+        />
+      </ModalShell>
+    );
+  }
+  if (isUploadFileDialog(dialog)) {
+    return (
+      <ModalShell open onClose={closeNodeDialog} title="Upload File">
+        <UploadFileForm
+          parentNode={dialog.parentNode}
+          onClose={closeNodeDialog}
+          onSubmit={submitUploadFile}
+          isSubmitting={isUploadingFile}
+          error={uploadFileError}
+        />
+      </ModalShell>
+    );
+  }
+  if (isMoveDialog(dialog)) {
+    return (
+      <ModalShell open onClose={closeNodeDialog} title="Move">
+        <MoveNodeForm
+          movedNode={dialog.moveNode}
+          onClose={closeNodeDialog}
+          onSubmit={submitMove}
+          isSubmitting={isMoving}
+          error={moveNodeError}
         />
       </ModalShell>
     );
