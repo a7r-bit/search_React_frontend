@@ -1,0 +1,37 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  SHORT_NAME: search_frontend
+  CI_REGISTRY_IMAGE: dockerhub.mingas.by/${SHORT_NAME}
+
+build-job:
+  stage: build
+  only:
+    - main
+  tags:
+    - search
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build -f Dockerfile --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CI_REGISTRY_IMAGE:latest -t ${CI_REGISTRY_IMAGE}:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker system prune -a -f
+
+deploy-job:
+  stage: deploy
+  needs:
+    - build-job
+  only:
+    - main
+  tags:
+    - search
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker stop $SHORT_NAME || true
+    - docker rm $SHORT_NAME || true
+    - docker run -d -p 80:80 -p 5555:5555 -p 50051:50051 --name $SHORT_NAME --network search_network $CI_REGISTRY_IMAGE
+  environment:
+    name: prod
