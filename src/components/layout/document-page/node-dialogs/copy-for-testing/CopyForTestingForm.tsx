@@ -1,5 +1,5 @@
 import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
-import { Field, Input, Label } from "@headlessui/react";
+import { Field, Input } from "@headlessui/react";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";

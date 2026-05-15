@@ -27,7 +27,7 @@ export function CreateNodeDirectoryForm({
 
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
-    void onSubmit({ parentNode, newName: nameValue, description: null });
+    void onSubmit({ parentNode, newName: nameValue, description: "" });
   };
 
   return (
