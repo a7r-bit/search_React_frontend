@@ -1,0 +1,8 @@
+Dockerfile
+node_modules
+.git
+dist
+coverage
+*.log
+uploads
+tmp
