@@ -1,5 +1,5 @@
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
-import { Navigate, Outlet, Route, Routes } from "react-router";
+import { Outlet, Route, Routes } from "react-router";
 import { appRoutePaths } from "./paths";
 import { LoginLayout } from "@/components/layout/LoginLayout";
 import { LoginForm } from "@/components/features/LoginForm";
