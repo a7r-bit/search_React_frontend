@@ -33,6 +33,14 @@ export function AppRouter() {
           <Route path={appRoutePaths.archive.slice(1)} element={<></>} />
         </Route>
       </Route>
+      <Route
+        path="/admin/*"
+        element={
+          <p style={{ padding: "2rem" }}>
+            Если вы видите эту страницу — запрос не проксируется на Nest.
+          </p>
+        }
+      />
       <Route path="*" element={<Navigate to={appRoutePaths.home} replace />} />
     </Routes>
   );
