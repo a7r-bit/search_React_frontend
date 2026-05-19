@@ -7,6 +7,7 @@ import {
 } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Header } from "../features/Header";
+import { PageSearchProvider } from "@/hooks/use-page-search";
 
 type AppShellProps = PropsWithChildren<{
   sidebar: ReactElement<{ collapsed?: boolean }>;
@@ -46,8 +47,10 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         </section>
       </aside>
       <main className="flex min-w-0 flex-1 min-h-0 flex-col p-2">
-        <Header />
-        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+        <PageSearchProvider>
+          <Header />
+          <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+        </PageSearchProvider>
       </main>
     </div>
   );

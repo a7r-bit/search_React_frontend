@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePageSearch } from "@/hooks/use-page-search";
 import { DocumentHistoryPanel } from "./DocumentHistoryPanel";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { DocumentTreePanel } from "./DocumentTreePanel";
@@ -8,7 +9,16 @@ import { useDocumentTree } from "./hooks/useDocumentTree";
 import { useDocumentVersions } from "./hooks/useDocumentVersions";
 
 export function DocumentPage() {
-  // Hooks
+  const handleSearchQueryChange = useCallback((_query: string) => {
+    // TODO: filter document tree via Redux when search is wired to tree slice
+  }, []);
+
+  usePageSearch({
+    title: "All files",
+    placeholder: "Search files and folders...",
+    onQueryChange: handleSearchQueryChange,
+  });
+
   const documentTree = useDocumentTree();
   const documentVersions = useDocumentVersions(documentTree.selectedNode);
 
