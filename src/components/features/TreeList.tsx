@@ -4,6 +4,7 @@ import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
 import { TreeItem } from "../ui/TreeItem";
 
 export type TreeListProps = {
+  readonly showActionMenu?: boolean;
   readonly entities: Record<string, TreeNodeEntity>;
   readonly rootIds: string[];
   readonly childrenByParentId: Record<string, string[]>;
@@ -16,6 +17,7 @@ export type TreeListProps = {
 };
 
 export function TreeList({
+  showActionMenu = true,
   entities,
   rootIds,
   childrenByParentId,
@@ -41,6 +43,7 @@ export function TreeList({
     return (
       <div key={node.id}>
         <TreeItem
+          showActionMenu={showActionMenu}
           node={node}
           level={level}
           selected={selectedId === node.id}

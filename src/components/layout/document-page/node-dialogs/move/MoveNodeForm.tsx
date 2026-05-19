@@ -134,6 +134,7 @@ export function MoveNodeForm({
       </p>
       <div className="max-h-64 overflow-auto rounded-lg border border-(--color-border) p-2">
         <TreeList
+          showActionMenu={false}
           entities={tree.entities}
           rootIds={tree.rootIds}
           childrenByParentId={tree.childrenByParentId}

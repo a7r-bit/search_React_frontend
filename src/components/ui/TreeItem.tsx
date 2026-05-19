@@ -16,6 +16,7 @@ export type TreeItemProps = {
   readonly selected?: boolean;
   readonly expanded?: boolean;
   readonly hasChildren?: boolean;
+  readonly showActionMenu?: boolean;
   readonly onToggle?: (nodeId: string) => void;
   readonly onSelect: (node: TreeNodeEntity) => void;
   readonly onContextMenu?: (node: TreeNodeEntity, event: MouseEvent) => void;
@@ -27,6 +28,7 @@ export function TreeItem({
   selected = false,
   expanded = false,
   hasChildren = false,
+  showActionMenu = true,
   onToggle,
   onSelect,
   onContextMenu,
@@ -101,7 +103,7 @@ export function TreeItem({
         }}
         aria-label="Node actions"
       >
-        {node.permissions.length > 0 ? (
+        {showActionMenu && node.permissions.length > 0 ? (
           <MoreVertical size={14} aria-hidden="true" />
         ) : null}
       </button>

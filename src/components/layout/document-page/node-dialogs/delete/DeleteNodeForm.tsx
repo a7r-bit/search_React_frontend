@@ -27,8 +27,11 @@ export function DeleteNodeForm({
 
   return (
     <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-      <p className="text-sm text-(--color-text)">
-        Are you sure you want to delete {deleteTarget.name}?
+      <p className="text-xs text-(--color-text-muted)">
+        Are you sure you want to delete:{" "}
+        <span className="font-medium text-(--color-text)">
+          {deleteTarget.name}?
+        </span>
       </p>
 
       {error ? (

@@ -41,7 +41,7 @@ export function AppRouter() {
           </p>
         }
       />
-      <Route path="*" element={<Navigate to={appRoutePaths.home} replace />} />
+      <Route path="*" element={<div>Not Found</div>} />
     </Routes>
   );
 }
