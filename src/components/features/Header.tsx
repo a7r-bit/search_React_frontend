@@ -34,6 +34,12 @@ export function Header() {
             value={query}
             onChange={setQuery}
             placeholder={config.placeholder}
+            results={config.results}
+            total={config.total}
+            isLoading={config.isLoading}
+            isError={config.isError}
+            error={config.error}
+            onSelectResult={config.onSelectResult}
           />
         ) : null}
         <Button size="md" variant="ghost" onClick={toggleTheme}>
