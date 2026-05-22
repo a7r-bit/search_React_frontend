@@ -129,7 +129,9 @@ const treeSlice = createSlice({
         delete state.childrenByParentId[id];
       }
 
-      state.expandedIds = state.expandedIds.filter((id) => !idsToRemove.has(id));
+      state.expandedIds = state.expandedIds.filter(
+        (id) => !idsToRemove.has(id)
+      );
       if (state.selectedId && idsToRemove.has(state.selectedId)) {
         state.selectedId = null;
       }

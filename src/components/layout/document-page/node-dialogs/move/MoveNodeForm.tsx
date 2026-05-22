@@ -40,8 +40,7 @@ export function MoveNodeForm({
   error,
 }: MoveNodeFormProps) {
   const tree = useAppSelector((state) => state.tree);
-  // Переписать, т.к. меняется глобальный стейт дерева
-  // Отфильтровать входной массив по kind:directory
+  //TODO Отфильтровать входной массив по kind:directory
   const [loadChildren] = useLazyGetTreeChildrenQuery();
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [selectedDestinationId, setSelectedDestinationId] = useState<

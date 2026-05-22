@@ -1,13 +1,5 @@
 import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
-// "create-directory"
-// | "upload-file"
-// | "move"
-// | "rename"
-// | "manage-access"
-// | "copy-for-testing"
-// | "delete";
 
-/** Discriminated union for node-related modals in the document tree panel. */
 export type NodeDialogState =
   | { readonly type: "closed" }
   | { readonly type: "create-directory"; readonly parentNode: TreeNodeEntity }
