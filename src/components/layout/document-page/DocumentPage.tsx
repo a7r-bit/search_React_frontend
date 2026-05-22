@@ -1,22 +1,58 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { GlobalSearchResultItem } from "@/api/model/globalSearch/global-search-entity";
+import { useAppDispatch } from "@/hooks/redux";
+import { usePageSearch } from "@/hooks/use-page-search";
+import { setSelected } from "@/store/tree/tree-slice";
 import { DocumentHistoryPanel } from "./DocumentHistoryPanel";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { DocumentTreePanel } from "./DocumentTreePanel";
+import { useDocumentGlobalSearch } from "./hooks/useDocumentGlobalSearch";
 import { useDocumentPreview } from "./hooks/useDocumentPreview";
 import { useDocumentTree } from "./hooks/useDocumentTree";
 
 import { useDocumentVersions } from "./hooks/useDocumentVersions";
 
 export function DocumentPage() {
-  // Hooks
+  const dispatch = useAppDispatch();
   const documentTree = useDocumentTree();
+  const globalSearch = useDocumentGlobalSearch(
+    documentTree.selectedNode,
+    documentTree.tree.rootIds
+  );
   const documentVersions = useDocumentVersions(documentTree.selectedNode);
+  const [openedVersionId, setOpenedVersionId] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const handleSelectSearchResult = useCallback(
+    (item: GlobalSearchResultItem) => {
+      //  TODO реализация взамодействия с redux tree slice
+      switch (item.kind) {
+        case "file":
+          console.log(` ${item.fileName} is a file`);
+          break;
+        case "directory":
+          console.log(` ${item.name} is a directory`);
+          break;
+      }
+      globalSearch.reset();
+    },
+    [dispatch, globalSearch.reset]
+  );
+
+  usePageSearch({
+    title: "All files",
+    placeholder: "Search files and folders...",
+    results: globalSearch.data?.items,
+    total: globalSearch.data?.total,
+    error: globalSearch.error?.message ?? undefined,
+    isLoading: globalSearch.isLoading,
+    isError: Boolean(globalSearch.error),
+    onQueryChange: globalSearch.runSearch,
+    onSelectResult: handleSelectSearchResult,
+  });
 
   const defaultVersionId =
     documentTree.selectedNode?.document?.latestVersionId ?? null;
-  const [openedVersionId, setOpenedVersionId] = useState<string | null>(null);
-
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     setOpenedVersionId(null);
