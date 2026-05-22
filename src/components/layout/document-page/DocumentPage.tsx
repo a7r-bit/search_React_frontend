@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { GlobalSearchResultItem } from "@/api/model/globalSearch/global-search-entity";
 import { useAppDispatch } from "@/hooks/redux";
 import { usePageSearch } from "@/hooks/use-page-search";
-import { setSelected } from "@/store/tree/tree-slice";
 import { DocumentHistoryPanel } from "./DocumentHistoryPanel";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { DocumentTreePanel } from "./DocumentTreePanel";

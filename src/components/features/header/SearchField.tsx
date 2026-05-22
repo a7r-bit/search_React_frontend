@@ -1,5 +1,4 @@
 import type { GlobalSearchResultItem } from "@/api/model/globalSearch/global-search-entity";
-import { Button } from "@/components/ui/Button";
 import { Search } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { SearchResultsDropdown } from "./SearchResultsDropdown";
@@ -71,10 +70,6 @@ export function SearchField({
       document.removeEventListener("mousedown", handlePointerDown);
     };
   }, [isOpen, onChange]);
-
-  const focusInput = () => {
-    resolvedRef.current?.focus();
-  };
 
   const handleSelectResult = (item: GlobalSearchResultItem) => {
     onSelectResult?.(item);
