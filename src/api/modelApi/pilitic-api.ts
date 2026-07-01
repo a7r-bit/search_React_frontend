@@ -1,17 +1,14 @@
 import { baseApi } from "../base-api";
 import type {
   ApiPoliticAccessGroupResponse,
-  ApiPoliticGroupResponse,
   ApiPoliticGroupResponseList,
 } from "../model/politicGroup/api-politic-group-dto";
 import {
   mapApiPoliticAccessGroupResponseToEntity,
   mapApiPoliticGroupResponseListToEntity,
-  mapApiPoliticGroupResponseToEntity,
 } from "../model/politicGroup/mapper";
 import type {
   AccessType,
-  PoliticGroupEntity,
   PoliticGroupListEntity,
   PoliticGroupResponse,
 } from "../model/politicGroup/politic-group-entity";
