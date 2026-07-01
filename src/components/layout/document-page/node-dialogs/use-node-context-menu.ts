@@ -16,6 +16,10 @@ import type { MouseEvent } from "react";
 import { useCallback, useState } from "react";
 
 import { INITIAL_NODE_DIALOG, type NodeDialogState } from "./node-dialog-state";
+import {
+  useUpdatePoliticGroupForNodeMutation,
+  type UpdateGroupAccesses,
+} from "@/api/modelApi/pilitic-api";
 
 type NodeContextMenuState = {
   x: number;
@@ -52,6 +56,11 @@ export type MoveNodeParams = {
   newParentNode: TreeNodeEntity;
 };
 
+export type ManageAccessForNodeParams = {
+  manageNode: TreeNodeEntity;
+  groupAccesses: UpdateGroupAccesses[];
+};
+
 function errorMessageFromUnknown(error: unknown): string {
   if (
     error &&
@@ -61,11 +70,12 @@ function errorMessageFromUnknown(error: unknown): string {
   ) {
     return (error as { message: string }).message;
   }
-  return "Rename failed";
+  return "An unknown error occurred";
 }
 
 export function useNodeContextMenu() {
   const dispatch = useAppDispatch();
+  // Error States
   const [menu, setMenu] = useState<NodeContextMenuState>(null);
   const [dialog, setDialog] = useState<NodeDialogState>(INITIAL_NODE_DIALOG);
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -75,7 +85,10 @@ export function useNodeContextMenu() {
   >(null);
   const [uploadFileError, setUploadFileError] = useState<string | null>(null);
   const [moveNodeError, setMoveNodeError] = useState<string | null>(null);
-
+  const [manageAccessError, setManageAccessError] = useState<string | null>(
+    null
+  );
+  // Mutations
   const [updateNode, updateNodeState] = useUpdateNodeMutation();
   const [updateDocumentVersion, updateDocumentVersionState] =
     useUpdateDocumentVersionMutation();
@@ -83,6 +96,8 @@ export function useNodeContextMenu() {
   const [createNode, createNodeState] = useCreateNodeMutation();
   const [uploadFile, uploadFileState] = useUploadFileMutation();
   const [moveNode, moveNodeState] = useMoveNodeMutation();
+  const [updatePoliticGroupForNode, updatePoliticGroupForNodeState] =
+    useUpdatePoliticGroupForNodeMutation();
 
   const handleContextMenu = (node: TreeNodeEntity, event: MouseEvent) => {
     event.preventDefault();
@@ -100,6 +115,7 @@ export function useNodeContextMenu() {
     setCreateDirectoryError(null);
     setUploadFileError(null);
     setMoveNodeError(null);
+    setManageAccessError(null);
   }, []);
 
   const refreshTreeByParentId = useCallback(
@@ -274,6 +290,29 @@ export function useNodeContextMenu() {
     },
     [closeNodeDialog, moveNode, refreshTreeByParentId]
   );
+  const submitManageAccess = useCallback(
+    async ({ manageNode, groupAccesses }: ManageAccessForNodeParams) => {
+      setManageAccessError(null);
+      if (!manageNode) {
+        setManageAccessError("No node to manage access");
+        return;
+      }
+      if (!manageNode.permissions.includes("ADMIN")) {
+        setManageAccessError("You do not have permission to manage access");
+        return;
+      }
+      try {
+        await updatePoliticGroupForNode({
+          nodeId: manageNode.id,
+          groupAccesses,
+        }).unwrap();
+        closeNodeDialog();
+      } catch (error) {
+        setManageAccessError(errorMessageFromUnknown(error));
+      }
+    },
+    [closeNodeDialog, updatePoliticGroupForNode]
+  );
 
   const handleMenuAction = (action: ContextMenuAction) => {
     if (!menu?.node) return;
@@ -292,7 +331,8 @@ export function useNodeContextMenu() {
         closeMenu();
         break;
       case "manage-access":
-        console.log("Manage access:", menu.node.id);
+        setDialog({ type: "manage-access", manageNode: menu.node });
+        closeMenu();
         break;
       case "copy-for-testing":
         setDialog({ type: "copy-for-testing", copyNode: menu.node });
@@ -336,5 +376,8 @@ export function useNodeContextMenu() {
     submitMove,
     moveNodeError,
     isMoving: moveNodeState.isLoading,
+    submitManageAccess,
+    manageAccessError,
+    isManagingAccess: updatePoliticGroupForNodeState.isLoading,
   };
 }

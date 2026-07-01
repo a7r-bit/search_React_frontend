@@ -4,6 +4,7 @@ import {
   isCopyForTestingDialog,
   isCreateDirectoryDialog,
   isDeleteDialog,
+  isManageAccessDialog,
   isMoveDialog,
   isRenameDialog,
   isUploadFileDialog,
@@ -13,6 +14,7 @@ import { RenameNodeForm } from "./rename/RenameNodeForm";
 import type {
   CreateTreeDirectoryParams,
   DeleteTreeItemParams,
+  ManageAccessForNodeParams,
   MoveNodeParams,
   RenameTreeItemParams,
   UploadFileParams,
@@ -22,6 +24,7 @@ import { CreateNodeDirectoryForm } from "./create-directory/CreateNodeDirectoryF
 import { CopyForTestingForm } from "./copy-for-testing/CopyForTestingForm";
 import { UploadFileForm } from "./upload-file/UploadFileForm";
 import { MoveNodeForm } from "./move/MoveNodeForm";
+import { ManageAccessForm } from "./manage-access/ManageAccessForm";
 
 type DocumentTreeNodeDialogsProps = {
   readonly dialog: NodeDialogState;
@@ -43,6 +46,11 @@ type DocumentTreeNodeDialogsProps = {
   readonly submitMove: (params: MoveNodeParams) => void | Promise<void>;
   readonly moveNodeError: string | null;
   readonly isMoving: boolean;
+  readonly submitManageAccess: (
+    params: ManageAccessForNodeParams
+  ) => void | Promise<void>;
+  readonly isManagingAccess: boolean;
+  readonly manageAccessError: string | null;
 };
 
 export function DocumentTreeNodeDialogs({
@@ -63,6 +71,9 @@ export function DocumentTreeNodeDialogs({
   submitMove,
   moveNodeError,
   isMoving,
+  submitManageAccess,
+  isManagingAccess,
+  manageAccessError,
 }: DocumentTreeNodeDialogsProps) {
   if (isRenameDialog(dialog)) {
     return (
@@ -136,6 +147,21 @@ export function DocumentTreeNodeDialogs({
           onSubmit={submitMove}
           isSubmitting={isMoving}
           error={moveNodeError}
+        />
+      </ModalShell>
+    );
+  }
+
+  if (isManageAccessDialog(dialog)) {
+    return (
+      <ModalShell open onClose={closeNodeDialog} title="Manage Access">
+        <ManageAccessForm
+          key={dialog.manageNode.id}
+          manageNode={dialog.manageNode}
+          onClose={closeNodeDialog}
+          onSubmit={submitManageAccess}
+          isSubmitting={isManagingAccess}
+          error={manageAccessError}
         />
       </ModalShell>
     );
