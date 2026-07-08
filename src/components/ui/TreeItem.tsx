@@ -79,11 +79,15 @@ export function TreeItem({
       )}
 
       {node.kind === "directory" ? (
-        <Folder size={16} className="text-blue-400" aria-hidden="true" />
+        <Folder
+          size={16}
+          className="shrink-0 text-blue-400"
+          aria-hidden="true"
+        />
       ) : (
         <FileText
           size={16}
-          className="text-(--color-text-muted)"
+          className="text-(--color-text-muted) shrink-0"
           aria-hidden="true"
         />
       )}
