@@ -5,7 +5,11 @@ import {
 import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { selectVisibleNodes } from "@/store/tree/tree-selectors";
-import { setSelected, toogleExpanded } from "@/store/tree/tree-slice";
+import {
+  expandNodes,
+  setSelected,
+  toogleExpanded,
+} from "@/store/tree/tree-slice";
 import { useMemo } from "react";
 
 export function useDocumentTree() {
@@ -23,6 +27,18 @@ export function useDocumentTree() {
 
   const handleSelect = (node: TreeNodeEntity) => {
     dispatch(setSelected(node.id));
+  };
+
+  const handleOpenNodePath = async (
+    pathIds: string[],
+    targetNodeId: string
+  ) => {
+    for (const parentId of pathIds) {
+      await loadChildren({ parentId, sort: "name:asc" }).unwrap();
+    }
+
+    dispatch(expandNodes(pathIds));
+    dispatch(setSelected(targetNodeId));
   };
 
   const handleToggle = (nodeId: string) => {
@@ -44,5 +60,6 @@ export function useDocumentTree() {
     selectedNode,
     handleSelect,
     handleToggle,
+    handleOpenNodePath,
   };
 }

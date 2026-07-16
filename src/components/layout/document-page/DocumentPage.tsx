@@ -23,16 +23,13 @@ export function DocumentPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
 
   const handleSelectSearchResult = useCallback(
-    (item: GlobalSearchResultItem) => {
+    async (item: GlobalSearchResultItem) => {
       //  TODO реализация взамодействия с redux tree slice
-      switch (item.kind) {
-        case "file":
-          console.log(` ${item.fileName} is a file`);
-          break;
-        case "directory":
-          console.log(` ${item.name} is a directory`);
-          break;
-      }
+      const targetNodeId = item.id;
+      const pathIds = item.path.map((segment) => segment.id);
+
+      await documentTree.handleOpenNodePath(pathIds, targetNodeId);
+
       globalSearch.reset();
     },
     [dispatch, globalSearch.reset]

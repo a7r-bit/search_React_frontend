@@ -61,15 +61,25 @@ const treeSlice = createSlice({
         state.childrenByParentId[parentId] = childrenFromPayload[parentId]!;
       }
     },
+    // Переключение состояния раскрытия узла по id
     toogleExpanded(state, action: PayloadAction<string>) {
       const newExpandedIds = state.expandedIds.includes(action.payload)
         ? state.expandedIds.filter((id) => id !== action.payload)
         : [...state.expandedIds, action.payload];
       state.expandedIds = newExpandedIds;
     },
+
+    // Раскрытие переданных по id узлов
+    expandNodes(state, action: PayloadAction<string[]>) {
+      state.expandedIds = Array.from(
+        new Set([...state.expandedIds, ...action.payload])
+      );
+    },
+    // Установка выбранного узла по id
     setSelected(state, action: PayloadAction<string>) {
       state.selectedId = action.payload;
     },
+    // Установка дочерних узлов для узла по id
     setChildren(state, action: PayloadAction<TreeNodeEntity[]>) {
       const newEntities = {
         ...state.entities,
@@ -96,6 +106,7 @@ const treeSlice = createSlice({
       };
       state.childrenByParentId = newChildrenByParentId;
     },
+    // Удаление узла по id
     removeNode(state, action: PayloadAction<string>) {
       const idsToRemove = new Set<string>();
       const stack = [action.payload];
@@ -142,6 +153,12 @@ const treeSlice = createSlice({
   },
 });
 
-export const { setSelected, setTree, toogleExpanded, setChildren, removeNode } =
-  treeSlice.actions;
+export const {
+  setSelected,
+  setTree,
+  toogleExpanded,
+  setChildren,
+  removeNode,
+  expandNodes,
+} = treeSlice.actions;
 export const treeReducer = treeSlice.reducer;
