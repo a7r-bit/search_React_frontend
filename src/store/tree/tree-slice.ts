@@ -69,7 +69,7 @@ const treeSlice = createSlice({
       state.expandedIds = newExpandedIds;
     },
 
-    // Раскрытие переданных по id узлов
+    // Раскрытие всех узлов переданных по id узлов
     expandNodes(state, action: PayloadAction<string[]>) {
       state.expandedIds = Array.from(
         new Set([...state.expandedIds, ...action.payload])

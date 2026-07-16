@@ -1,8 +1,8 @@
 import type { PathSegment, SearchHighlight } from "./api-global-search-dto";
 
 export type GlobalSearchResultItem =
-  | GlobalSearchFileItem
-  | GlobalSearchDirectoryItem;
+  | GlobalSearchDirectoryItem
+  | GlobalSearchFileItem;
 export type GlobalSearchEntity = {
   items: GlobalSearchResultItem[];
   total: number;

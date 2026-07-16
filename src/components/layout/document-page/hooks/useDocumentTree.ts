@@ -11,6 +11,7 @@ import {
   toogleExpanded,
 } from "@/store/tree/tree-slice";
 import { useMemo } from "react";
+import type { GlobalSearchResultItem } from "@/api/model/globalSearch/global-search-entity";
 
 export function useDocumentTree() {
   useGetTreeQuery(undefined, { refetchOnMountOrArgChange: true });
@@ -28,17 +29,23 @@ export function useDocumentTree() {
   const handleSelect = (node: TreeNodeEntity) => {
     dispatch(setSelected(node.id));
   };
-
+  // Открытие узла по пути и установка выбранного узла в tree slice
   const handleOpenNodePath = async (
     pathIds: string[],
-    targetNodeId: string
+    searchResultItem: GlobalSearchResultItem
   ) => {
     for (const parentId of pathIds) {
       await loadChildren({ parentId, sort: "name:asc" }).unwrap();
     }
 
     dispatch(expandNodes(pathIds));
-    dispatch(setSelected(targetNodeId));
+    dispatch(
+      setSelected(
+        searchResultItem.kind === "file"
+          ? searchResultItem.nodeId
+          : searchResultItem.id
+      )
+    );
   };
 
   const handleToggle = (nodeId: string) => {

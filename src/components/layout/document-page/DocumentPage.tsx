@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { GlobalSearchResultItem } from "@/api/model/globalSearch/global-search-entity";
-import { useAppDispatch } from "@/hooks/redux";
+import type { TreeNodeEntity } from "@/api/model/tree/tree-entity";
 import { usePageSearch } from "@/hooks/use-page-search";
 import { DocumentHistoryPanel } from "./DocumentHistoryPanel";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
@@ -12,7 +12,6 @@ import { useDocumentTree } from "./hooks/useDocumentTree";
 import { useDocumentVersions } from "./hooks/useDocumentVersions";
 
 export function DocumentPage() {
-  const dispatch = useAppDispatch();
   const documentTree = useDocumentTree();
   const globalSearch = useDocumentGlobalSearch(
     documentTree.selectedNode,
@@ -22,17 +21,25 @@ export function DocumentPage() {
   const [openedVersionId, setOpenedVersionId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
 
+  const handleSelectInTree = useCallback(
+    (node: TreeNodeEntity) => {
+      setOpenedVersionId(null);
+      setHistoryOpen(false);
+      documentTree.handleSelect(node);
+    },
+    [documentTree.handleSelect]
+  );
+
   const handleSelectSearchResult = useCallback(
     async (item: GlobalSearchResultItem) => {
-      //  TODO реализация взамодействия с redux tree slice
-      const targetNodeId = item.id;
       const pathIds = item.path.map((segment) => segment.id);
 
-      await documentTree.handleOpenNodePath(pathIds, targetNodeId);
-
+      await documentTree.handleOpenNodePath(pathIds, item);
+      setOpenedVersionId(item.kind === "file" ? item.id : null);
+      setHistoryOpen(false);
       globalSearch.reset();
     },
-    [dispatch, globalSearch.reset]
+    [globalSearch.reset, documentTree.handleOpenNodePath]
   );
 
   usePageSearch({
@@ -50,11 +57,6 @@ export function DocumentPage() {
   const defaultVersionId =
     documentTree.selectedNode?.document?.latestVersionId ?? null;
 
-  useEffect(() => {
-    setOpenedVersionId(null);
-    setHistoryOpen(false);
-  }, [documentTree.selectedNode?.id]);
-
   const activeVersionId = openedVersionId ?? defaultVersionId;
   const selectedDocumentVersion =
     documentVersions.documentVersions.find(
@@ -69,7 +71,7 @@ export function DocumentPage() {
 
   return (
     <div className="relative flex h-full min-h-0 flex-row gap-2">
-      <DocumentTreePanel {...documentTree} />
+      <DocumentTreePanel {...documentTree} handleSelect={handleSelectInTree} />
       <DocumentPreviewPanel
         {...documentPreview}
         onOpenHistory={canOpenHistory ? () => setHistoryOpen(true) : undefined}
